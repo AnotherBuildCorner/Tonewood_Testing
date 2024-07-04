@@ -5,11 +5,13 @@ import scipy.io.wavfile as wav
 import matplotlib.pyplot as plt
 import multiprocessing
 import time
+import scipy.io.wavfile
 
 def generate_chirp(start_freq, end_freq, duration, sampling_rate):
     t = np.linspace(0, duration, int(sampling_rate * duration), endpoint=False)
     frequencies = np.linspace(start_freq, end_freq, len(t))
     signal = np.sin(2 * np.pi * frequencies * t)
+    scipy.io.wavfile.write("chirp.wav", sampling_rate, signal)
     return signal
 
 def record_audio(filename, duration, sampling_rate, event):
