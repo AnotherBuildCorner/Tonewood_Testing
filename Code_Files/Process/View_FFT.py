@@ -14,7 +14,7 @@ calibration_folder = root_folder / Path("Recordings/Reference/")
 spectral_bins = np.array([1,100,300,500,750,1000,2000,3000,5000,7000,10000,12000,15000,20000,22050])
 file_extension = ".wav"
 
-output_f = 'pie_bridge_lowgain_1' 
+output_f = 'chirp2' 
 output_f2 = 'pie_neck_lowgain_1'
 calibration_f ='direct_1'
 noise_f = 'pie_noise_lowgain_1'
