@@ -18,7 +18,6 @@ search for peak transmission, and correlate with frequency
 a stepped response using a series of guitar notes  say A4-ect
 add a narrowband test with a longer sweep for guitar ranges
 
-
 '''
 root_folder = Path(__file__).parents[2]
 data_folder = root_folder / Path("Recordings/Trials/")
@@ -27,16 +26,17 @@ ch_sel = 1
 sampling_rate = 44100  # Hz
 #sweep parameters
 start_freq = 20  # Hz
-end_freq = 20000  # Hz
+end_freq = 10000  # Hz
 sweep_duration = 5  # seconds
 
 repeat_count = 3  # Number of times to repeat the chirp
 chirp_type = 'logarithmic'
 chirp_name = "chirp.wav"
 #white noise parameters
-noise_duration = 5 #total signal length
+noise_duration = 3 #total signal length
 noise_silence = 2 #last x seconds of total length are silence
 noise_repeats = 3 #number of repeats
+noise_randmax = 0.5
 noise_name = 'white_noise.wav'
 
 #pulse parameters
@@ -45,7 +45,7 @@ impulse_duration = 2
 impulse_repeats = 2
 impulse_name = "impulse.wav"
 #file oputput parameters
-output_counter = 2
+output_counter = 4
 output_file = "testing"
 
 
@@ -78,7 +78,7 @@ def generate_pulse(duration,pulsetime,sampling_rate,filename):
     return impulse
 
 def generate_white_noise(duration,post_silence,fs,filename):
-    noise = np.random.normal(0, 1, int(fs * (duration-post_silence)))
+    noise = np.random.normal(0, noise_randmax, int(fs * (duration-post_silence)))
     silence= np.zeros(int(fs*post_silence))
     signal = np.concatenate((noise,silence))
     signal2 = signal * (2**15 - 1) / np.max(np.abs(signal))
@@ -172,6 +172,11 @@ def play_signal(signal, sampling_rate, event, repeat_count=1):
     # Set event to notify recording function to stop
     event.set()
 
+def record_only(output_filename,duration,sampling_rate,ch_sel):
+    event = multiprocessing.Event()
+    record_process = multiprocessing.Process(target=record_audio, args=(output_filename, duration * 1, sampling_rate, event, ch_sel))
+    record_process.start()
+    record_process.join()
 
 def play_and_record_chirp(start_freq, end_freq, duration,repeat_count, sampling_rate,output_filename,chirp_name,chirp_type,ch_sel):
     chirp_signal = generate_chirp_linear(start_freq, end_freq, duration, sampling_rate,chirp_name,chirp_type)
@@ -204,13 +209,14 @@ def play_and_record_noise(duration,silence_time,repeat_count, sampling_rate,outp
     record_process.join()
 
 
+ 
 
 if __name__ == "__main__":
     
     #play_and_record_chirp(start_freq, end_freq, sweep_duration,repeat_count, sampling_rate,sweep_filename,chirp_name,chirp_type,ch_sel)
     #play_and_record_impulse(impulse_time,impulse_duration,impulse_repeats, sampling_rate,impulse_filename,impulse_name,ch_sel)
-    play_and_record_noise(noise_duration,noise_silence,noise_repeats, sampling_rate,noise_filename,noise_name,ch_sel)
+    #play_and_record_noise(noise_duration,noise_silence,noise_repeats, sampling_rate,noise_filename,noise_name,ch_sel)
 
-
+    View_FFT_v2.plot_PSD([sweep_file],1024,1)
     View_FFT_v2.plot_PSD([noise_file],1024,1)
     plt.show()

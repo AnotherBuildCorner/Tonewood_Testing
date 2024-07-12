@@ -39,10 +39,10 @@ def generate_chirp(filename, sampling_rate, duration=5.0):
 generate_chirp("chirp.wav", sampling_rate)
 
 
-def plot_fft_array(file_array, sampling_rate,fc,lims):
+def plot_fft_array(file_array, sampling_rate,figure_number,lims):
     max_amplitude_db = db_floor
     max_power_db = db_floor
-    fc +=1
+    figure_number +=1
 
     # First pass to determine max values for y-axis limits
     for n in file_array:
@@ -59,7 +59,7 @@ def plot_fft_array(file_array, sampling_rate,fc,lims):
             fft_out, psd, freqs = fft_process(n, sampling_rate)
             smoothed = sp.signal.savgol_filter(fft_out,1000,2)
 
-            plt.figure(fc, figsize=(12, 6))
+            plt.figure(figure_number, figsize=(12, 6))
             plt.xscale(xscale)
             plt.plot(freqs, fft_out, label=n)
             plt.plot(freqs, smoothed, label=n+' (smoothed)')
@@ -75,16 +75,16 @@ def plot_fft_array(file_array, sampling_rate,fc,lims):
         except Exception as e:
             print(f"Error plotting FFT: {e}")
 
-    return fc
+    return figure_number
 
-def plot_fft_dif_array(file_array, file_array2, sampling_rate,fc):
+def plot_fft_dif_array(file_array, file_array2, sampling_rate,figure_number):
     max_amplitude_db = db_floor
     max_power_db = db_floor
 
 
     # First pass to determine max values for y-axis limits
     for n in range(len(file_array)):
-        fc +=1
+        figure_number +=1
         try:
             fft_out, psd, freqs = fft_process(file_array[n], sampling_rate)
 
@@ -96,7 +96,7 @@ def plot_fft_dif_array(file_array, file_array2, sampling_rate,fc):
             print(f)
     
 
-            plt.figure(fc, figsize=(12, 6))
+            plt.figure(figure_number, figsize=(12, 6))
             plt.xscale(xscale)
             plt.plot(f, fm, label=n)
             plt.xlabel('Frequency (Hz)')
@@ -109,10 +109,10 @@ def plot_fft_dif_array(file_array, file_array2, sampling_rate,fc):
         except Exception as e:
             print(f"Error plotting FFT: {e}")
 
-    return fc
+    return figure_number
 
-def plot_fft_power_array(file_array, sampling_rate,fc):
-    fc +=1
+def plot_fft_power_array(file_array, sampling_rate,figure_number):
+    figure_number +=1
     max_amplitude_db = db_floor
     max_power_db = db_floor
 
@@ -130,7 +130,7 @@ def plot_fft_power_array(file_array, sampling_rate,fc):
         try:
             fft_out, psd, freqs = fft_process(n, sampling_rate)
 
-            plt.figure(fc, figsize=(12, 6))
+            plt.figure(figure_number, figsize=(12, 6))
             plt.xscale(xscale)
             plt.plot(freqs, psd, label=n)
             plt.xlabel('Frequency (Hz)')
@@ -143,9 +143,9 @@ def plot_fft_power_array(file_array, sampling_rate,fc):
         except Exception as e:
             print(f"Error plotting FFT: {e}")
 
-    return fc
+    return figure_number
 
-def plot_PSD(filearray,nperseg,fc):
+def plot_PSD(filearray,nperseg,figure_number,freq_lower,freq_upper):
     for n in filearray:
         sample_rate, data = open_file(n)
 
@@ -158,17 +158,19 @@ def plot_PSD(filearray,nperseg,fc):
         
 
         # Plot the PSD
-        plt.figure(fc,figsize=(10, 6))
+        plt.figure(figure_number,figsize=(10, 6))
         plt.semilogy(f, Pxx, label = n)
         plt.title('Power Spectral Density')
         plt.xlabel('Frequency [Hz]')
         plt.xscale(xscale)
         plt.ylabel('PSD [V^2/Hz]')
+        if(freq_lower != 0 and freq_upper != 0):
+            plt.xlim(freq_lower,freq_upper)
         plt.legend()
         plt.grid(True)
-    return fc
+    return figure_number
 
-def plot_PSD_db(filearray,nperseg,fc):
+def plot_PSD_db(filearray,nperseg,figure_number,freq_lower,freq_upper):
     for n in filearray:
         sample_rate, data = open_file(n)
 
@@ -181,22 +183,26 @@ def plot_PSD_db(filearray,nperseg,fc):
         Pxx = 10 * np.log10(Pxx)
 
         # Plot the PSD
-        plt.figure(fc,figsize=(10, 6))
+        plt.figure(figure_number,figsize=(10, 6))
         plt.plot(f, Pxx, label = n)
         plt.title('Power Spectral Density')
         plt.xlabel('Frequency [Hz]')
         plt.xscale(xscale)
         plt.ylabel('PSD [dB]')
+        if(freq_lower != 0 and freq_upper != 0):
+         plt.xlim(freq_lower,freq_upper)
         plt.legend()
         plt.grid(True)
-    return fc
+    return figure_number
 
-def plot_TF(filearray,filearray2,nperseg,fc,split):
+def plot_TF(filearray,filearray2,legend,nperseg,figure_number,split_figures,freq_lower,freq_upper):
 
 
     for n in range(len(filearray)):
-        if split: 
-            fc+=1
+
+
+        if split_figures: 
+            figure_number+=1
         f1 = filearray[n]
         f2 = filearray2[n]
         header = prefix_sort(f1,f2)
@@ -215,7 +221,7 @@ def plot_TF(filearray,filearray2,nperseg,fc,split):
         TF = Pxx_out/Pxx_in
         TF_db = 10 * np.log10(TF)
         # Plot the PSD
-        plt.figure(fc,figsize=(10, 6))
+        plt.figure(figure_number,figsize=(10, 6))
 
         plt.subplot(2, 1, 1)
         plt.xscale(xscale)
@@ -223,8 +229,14 @@ def plot_TF(filearray,filearray2,nperseg,fc,split):
         plt.title(f'{header} Transfer Function (Linear Scale)')
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('Magnitude')
+        if(freq_lower != 0 and freq_upper != 0):
+            plt.xlim(freq_lower,freq_upper)
         plt.grid(True)
-        plt.legend()
+
+        if legend == 0:
+            plt.legend()
+        else:
+            plt.legend([legend[n]])
 
         # Decibel scale
         plt.subplot(2, 1, 2)
@@ -233,11 +245,20 @@ def plot_TF(filearray,filearray2,nperseg,fc,split):
         plt.title(f'{header} Transfer Function (dB Scale)')
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('Magnitude [dB]')
+        if(freq_lower != 0 and freq_upper != 0):
+            plt.xlim(freq_lower,freq_upper)
         plt.grid(True)
-        plt.legend()
+        
+        if legend == 0:
+            plt.legend()
+        else:
+            plt.legend([legend[n]])
+
+        
+
 
         plt.tight_layout()
-    return fc
+    return figure_number
 
 def open_file(file):
     path = file + file_extension
