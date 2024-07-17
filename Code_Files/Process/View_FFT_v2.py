@@ -4,7 +4,7 @@ import numpy as np
 import scipy.io.wavfile as wav
 import matplotlib.pyplot as plt
 import os
-
+from matplotlib.ticker import ScalarFormatter
 from pathlib import Path
 
 
@@ -13,7 +13,8 @@ data_folder = root_folder / Path("Recordings/Trials/")
 calibration_folder = root_folder / Path("Recordings/Reference/")
 spectral_bins = np.array([1,100,300,500,750,1000,2000,3000,5000,7000,10000,12000,15000,20000,22050])
 file_extension = ".wav"
-
+log_lines = [0]
+annotations = None
 #input_array = ['mahogany_nut_1_1','plywood_nut_1']
 #output_array= ['mahogany_bridge_1_1','plywood_bridge_1']
 #input_array = ['mahogany_nut_1_1']
@@ -25,9 +26,13 @@ output_array= ['pickup_strum_1']
 sampling_rate = 44100  # Hz
 db_floor = -90  # dB
 
-
+arrow_param = [0,5,"none","green",0.5,8]
 xscale = 'log'
 yscale = 'linear'
+
+def close_plots(event):
+    if event.key == 'x':  # Check if 'X' key was pressed
+        plt.close('all')  # Close all figures
 
 def generate_chirp(filename, sampling_rate, duration=5.0):
     t = np.linspace(0, duration, int(sampling_rate * duration))
@@ -135,7 +140,7 @@ def plot_fft_power_array(file_array, sampling_rate,figure_number):
             plt.plot(freqs, psd, label=n)
             plt.xlabel('Frequency (Hz)')
             plt.ylabel('Power (dB)')
-            plt.grid(True)
+            plt.grid(True, which="both", ls="-")
             plt.title('FFT Power Analysis')
             plt.legend()
             plt.ylim(db_floor, max_power_db)
@@ -145,7 +150,7 @@ def plot_fft_power_array(file_array, sampling_rate,figure_number):
 
     return figure_number
 
-def plot_PSD(filearray,nperseg,figure_number,freq_lower,freq_upper):
+def plot_PSD(filearray,nperseg,figure_number,freq_lower,freq_upper,spectral_bins):
     for n in filearray:
         sample_rate, data = open_file(n)
 
@@ -164,13 +169,32 @@ def plot_PSD(filearray,nperseg,figure_number,freq_lower,freq_upper):
         plt.xlabel('Frequency [Hz]')
         plt.xscale(xscale)
         plt.ylabel('PSD [V^2/Hz]')
+        plt.grid(True, which="both", ls="-")
+        if log_lines[0] != 0:
+            plt.vlines(x = log_lines, ymin = min(Pxx), ymax = max(Pxx),
+            colors = 'purple',
+            label = 'kHz lines')
         if(freq_lower != 0 and freq_upper != 0):
             plt.xlim(freq_lower,freq_upper)
         plt.legend()
-        plt.grid(True)
+
+        ax = plt.gca()  # Get current axes
+        ax.minorticks_on()  # Enable minor ticks
+        minor_ticks = np.arange(freq_lower, freq_upper, 1000)  # Change step as needed
+        ax.set_xticks(minor_ticks, minor=True)  # Set minor ticks
+        ax.set_xticklabels([f"{tick} Hz" for tick in minor_ticks], minor=True, rotation=45, ha='right')
+
+        if spectral_bins is not None:
+            max_values = find_max_in_bins(f, Pxx,"V²/Hz" ,spectral_bins)
+            for (max_freq, max_value, text) in max_values:
+                ax.annotate(text, xy=(max_freq, max_value), xytext=(max_freq + arrow_param[0], max_value+arrow_param[1]),
+                            arrowprops=dict(facecolor=arrow_param[2], shrink=arrow_param[4]),
+                            fontsize=arrow_param[5], color=arrow_param[3])
+                
+        plt.gcf().canvas.mpl_connect('key_press_event', close_plots)
     return figure_number
 
-def plot_PSD_db(filearray,nperseg,figure_number,freq_lower,freq_upper):
+def plot_PSD_db(filearray,nperseg,figure_number,freq_lower,freq_upper,spectral_bins):
     for n in filearray:
         sample_rate, data = open_file(n)
 
@@ -189,13 +213,33 @@ def plot_PSD_db(filearray,nperseg,figure_number,freq_lower,freq_upper):
         plt.xlabel('Frequency [Hz]')
         plt.xscale(xscale)
         plt.ylabel('PSD [dB]')
+        plt.grid(True, which="both", ls="-")
+        if log_lines[0] != 0:
+            plt.vlines(x = log_lines, ymin = min(Pxx), ymax = max(Pxx),
+            colors = 'purple',
+            label = 'kHz lines')
         if(freq_lower != 0 and freq_upper != 0):
          plt.xlim(freq_lower,freq_upper)
         plt.legend()
-        plt.grid(True)
+
+        ax = plt.gca()  # Get current axes
+        ax.minorticks_on()  # Enable minor ticks
+        minor_ticks = np.arange(freq_lower, freq_upper, 1000)  # Change step as needed
+        ax.set_xticks(minor_ticks, minor=True)  # Set minor ticks
+        ax.set_xticklabels([f"{tick} Hz" for tick in minor_ticks], minor=True, rotation=45, ha='right')
+
+        ax.yaxis.set_major_formatter(ScalarFormatter())
+        plt.gcf().canvas.mpl_connect('key_press_event', close_plots)
+
+        if spectral_bins is not None:
+            max_values = find_max_in_bins(f, Pxx,"dB" ,spectral_bins)
+            for (max_freq, max_value, text) in max_values:
+                ax.annotate(text, xy=(max_freq, max_value), xytext=(max_freq + arrow_param[0], max_value+arrow_param[1]),
+                            arrowprops=dict(facecolor=arrow_param[2], shrink=arrow_param[4]),
+                            fontsize=arrow_param[5], color=arrow_param[3])
     return figure_number
 
-def plot_TF(filearray,filearray2,legend,nperseg,figure_number,split_figures,freq_lower,freq_upper):
+def plot_TF(filearray,filearray2,legend,nperseg,figure_number,split_figures,freq_lower,freq_upper,spectral_bins):
 
 
     for n in range(len(filearray)):
@@ -223,20 +267,40 @@ def plot_TF(filearray,filearray2,legend,nperseg,figure_number,split_figures,freq
         # Plot the PSD
         plt.figure(figure_number,figsize=(10, 6))
 
+        
+
         plt.subplot(2, 1, 1)
         plt.xscale(xscale)
         plt.plot(f_in, TF, label = header)
         plt.title(f'{header} Transfer Function (Linear Scale)')
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('Magnitude')
+        plt.grid(True, which="both", ls="-")
+        if log_lines[0] != 0:
+            plt.vlines(x = log_lines, ymin = min(TF), ymax = max(TF),
+            colors = 'purple',
+            label = 'kHz lines')
         if(freq_lower != 0 and freq_upper != 0):
             plt.xlim(freq_lower,freq_upper)
-        plt.grid(True)
 
         if legend == 0:
             plt.legend()
         else:
             plt.legend([legend[n]])
+        ax = plt.gca()  # Get current axes
+        ax.minorticks_on()  # Enable minor ticks
+        minor_ticks = np.arange(freq_lower, freq_upper, 1000)  # Change step as needed
+        ax.set_xticks(minor_ticks, minor=True)  # Set minor ticks
+        ax.set_xticklabels([f"{tick} Hz" for tick in minor_ticks], minor=True, rotation=45, ha='right')
+
+        ax.yaxis.set_major_formatter(ScalarFormatter())
+
+        if spectral_bins is not None:
+            max_values = find_max_in_bins(f_in, TF,"V^2/Hz" ,spectral_bins)
+            for (max_freq, max_value, text) in max_values:
+                ax.annotate(text, xy=(max_freq, max_value), xytext=(max_freq + arrow_param[0], max_value+arrow_param[1]),
+                            arrowprops=dict(facecolor=arrow_param[2], shrink=arrow_param[4]),
+                            fontsize=arrow_param[5], color=arrow_param[3])
 
         # Decibel scale
         plt.subplot(2, 1, 2)
@@ -245,19 +309,38 @@ def plot_TF(filearray,filearray2,legend,nperseg,figure_number,split_figures,freq
         plt.title(f'{header} Transfer Function (dB Scale)')
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('Magnitude [dB]')
+        if log_lines[0] != 0:
+            plt.vlines(x = log_lines, ymin = min(TF_db), ymax = max(TF_db),
+            colors = 'purple',
+            label = 'kHz lines')
         if(freq_lower != 0 and freq_upper != 0):
             plt.xlim(freq_lower,freq_upper)
-        plt.grid(True)
+        plt.grid(True, which="both", ls="-")
         
         if legend == 0:
             plt.legend()
         else:
             plt.legend([legend[n]])
+        ax = plt.gca()  # Get current axes
+        ax.minorticks_on()  # Enable minor ticks
+        minor_ticks = np.arange(freq_lower, freq_upper, 1000)  # Change step as needed
+        ax.set_xticks(minor_ticks, minor=True)  # Set minor ticks
+        ax.set_xticklabels([f"{tick} Hz" for tick in minor_ticks], minor=True, rotation=45, ha='right')
+
+        ax.yaxis.set_major_formatter(ScalarFormatter())
+
+        if spectral_bins is not None:
+            max_values = find_max_in_bins(f_in, TF_db,"dB" ,spectral_bins)
+            for (max_freq, max_value, text) in max_values:
+                ax.annotate(text, xy=(max_freq, max_value), xytext=(max_freq + arrow_param[0], max_value+arrow_param[1]),
+                            arrowprops=dict(facecolor=arrow_param[2], shrink=arrow_param[4]),
+                            fontsize=arrow_param[5], color=arrow_param[3])
 
         
 
 
         plt.tight_layout()
+        plt.gcf().canvas.mpl_connect('key_press_event', close_plots)
     return figure_number
 
 def open_file(file):
@@ -342,6 +425,23 @@ def prefix_sort(str1, str2):
             return str1[:i]  # Return the prefix up to the first differing character
     
     return str1[:min_len]  # Return the entire string if one is a substring of the other
+
+def find_max_in_bins(f, Pxx,label ,spectral_bins):
+    max_values = []
+    
+    for i in range(len(spectral_bins) - 1):
+        bin_start = spectral_bins[i]
+        bin_end = spectral_bins[i + 1]
+        
+        # Find indices within the frequency range
+        indices = np.where((f >= bin_start) & (f < bin_end))
+        
+        if indices[0].size > 0:  # Check if there are any indices in the bin
+            max_value = np.max(Pxx[indices])
+            max_freq = f[indices][np.argmax(Pxx[indices])]  # Frequency at which max occurs
+            max_values.append((max_freq, max_value, f"{max_value:.0f} {label} at {max_freq:.0f} Hz"))
+    
+    return max_values
 
 if __name__ == "__main__":
     #plot_fft(filepath, filepath2, ref_path, noise_path, sampling_rate)

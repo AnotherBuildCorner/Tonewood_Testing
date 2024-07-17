@@ -45,8 +45,8 @@ impulse_duration = 2
 impulse_repeats = 2
 impulse_name = "impulse.wav"
 #file oputput parameters
-output_counter = 4
-output_file = "testing"
+output_counter = 1
+output_file = "old_exciter"
 
 
 sweep_file = f'{output_file}_sweep_{output_counter}'
@@ -213,10 +213,10 @@ def play_and_record_noise(duration,silence_time,repeat_count, sampling_rate,outp
 
 if __name__ == "__main__":
     
-    #play_and_record_chirp(start_freq, end_freq, sweep_duration,repeat_count, sampling_rate,sweep_filename,chirp_name,chirp_type,ch_sel)
+    play_and_record_chirp(start_freq, end_freq, sweep_duration,repeat_count, sampling_rate,sweep_filename,chirp_name,chirp_type,ch_sel)
     #play_and_record_impulse(impulse_time,impulse_duration,impulse_repeats, sampling_rate,impulse_filename,impulse_name,ch_sel)
-    #play_and_record_noise(noise_duration,noise_silence,noise_repeats, sampling_rate,noise_filename,noise_name,ch_sel)
+    play_and_record_noise(noise_duration,noise_silence,noise_repeats, sampling_rate,noise_filename,noise_name,ch_sel)
 
-    View_FFT_v2.plot_PSD([sweep_file],1024,1)
-    View_FFT_v2.plot_PSD([noise_file],1024,1)
+    View_FFT_v2.plot_PSD([sweep_file],1024,1,start_freq,end_freq)
+    View_FFT_v2.plot_PSD([noise_file],1024,1,start_freq,end_freq)
     plt.show()

@@ -24,6 +24,9 @@ freq_upper = 10000
 #output_array= ['mahogany_bridge_1_1','plywood_bridge_1']
 input_array = ['mahogany_nut_1_1']
 output_array= ['mahogany_bridge_1_1']
+
+#input_array = ['old_exciter_sweep_1']
+#output_array= ['new_exciter_sweep_1']
 #input_array = ['headstock_strum_1']
 #output_array= ['pickup_strum_1']
 
@@ -43,13 +46,13 @@ if __name__ == "__main__":
     figure_count = 1
     #figure_count = plot_fft_array(input_array,sampling_rate,figure_count,False)
     #figure_count = plot_fft_power_array(array,sampling_rate,figure_count)
-    figure_count = View_FFT_v2.plot_PSD(input_array,1024,figure_count,freq_lower,freq_upper)
-    figure_count = View_FFT_v2.plot_PSD(output_array,1024,figure_count,freq_lower,freq_upper)
+    figure_count = View_FFT_v2.plot_PSD(input_array,1024,figure_count,freq_lower,freq_upper,spectral_bins)
+    figure_count = View_FFT_v2.plot_PSD(output_array,1024,figure_count,freq_lower,freq_upper,spectral_bins)
     figure_count = 2
-    figure_count = View_FFT_v2.plot_PSD_db(input_array,1024,figure_count,freq_lower,freq_upper)
-    figure_count = View_FFT_v2.plot_PSD_db(output_array,1024,figure_count,freq_lower,freq_upper)
+    figure_count = View_FFT_v2.plot_PSD_db(input_array,1024,figure_count,freq_lower,freq_upper,spectral_bins)
+    figure_count = View_FFT_v2.plot_PSD_db(output_array,1024,figure_count,freq_lower,freq_upper,spectral_bins)
     figure_count = 3
-    figure_count = View_FFT_v2.plot_TF(input_array,output_array,legend,1024,figure_count,False,freq_lower,freq_upper)
+    figure_count = View_FFT_v2.plot_TF(input_array,output_array,legend,1024,figure_count,False,freq_lower,freq_upper,spectral_bins)
     #figure_count = plot_fft_dif_array(array,array2,sampling_rate,figure_count)
 
     plt.show()
