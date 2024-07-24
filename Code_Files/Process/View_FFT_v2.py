@@ -21,7 +21,7 @@ annotations = None
 #output_array= ['mahogany_bridge_1_1']
 input_array = ['headstock_strum_1']
 output_array= ['pickup_strum_1']
-
+minor_lower = 1000
 
 sampling_rate = 44100  # Hz
 db_floor = -90  # dB
@@ -224,7 +224,7 @@ def plot_PSD_db(filearray,nperseg,figure_number,freq_lower,freq_upper,spectral_b
 
         ax = plt.gca()  # Get current axes
         ax.minorticks_on()  # Enable minor ticks
-        minor_ticks = np.arange(freq_lower, freq_upper, 1000)  # Change step as needed
+        minor_ticks = np.arange(minor_lower, freq_upper, 1000)  # Change step as needed
         ax.set_xticks(minor_ticks, minor=True)  # Set minor ticks
         ax.set_xticklabels([f"{tick} Hz" for tick in minor_ticks], minor=True, rotation=45, ha='right')
 
@@ -289,7 +289,7 @@ def plot_TF(filearray,filearray2,legend,nperseg,figure_number,split_figures,freq
             plt.legend([legend[n]])
         ax = plt.gca()  # Get current axes
         ax.minorticks_on()  # Enable minor ticks
-        minor_ticks = np.arange(freq_lower, freq_upper, 1000)  # Change step as needed
+        minor_ticks = np.arange(minor_lower, freq_upper, 1000)  # Change step as needed
         ax.set_xticks(minor_ticks, minor=True)  # Set minor ticks
         ax.set_xticklabels([f"{tick} Hz" for tick in minor_ticks], minor=True, rotation=45, ha='right')
 
@@ -323,7 +323,78 @@ def plot_TF(filearray,filearray2,legend,nperseg,figure_number,split_figures,freq
             plt.legend([legend[n]])
         ax = plt.gca()  # Get current axes
         ax.minorticks_on()  # Enable minor ticks
-        minor_ticks = np.arange(freq_lower, freq_upper, 1000)  # Change step as needed
+        minor_ticks = np.arange(minor_lower, freq_upper, 1000)  # Change step as needed
+        ax.set_xticks(minor_ticks, minor=True)  # Set minor ticks
+        ax.set_xticklabels([f"{tick} Hz" for tick in minor_ticks], minor=True, rotation=45, ha='right')
+
+        ax.yaxis.set_major_formatter(ScalarFormatter())
+
+        if spectral_bins is not None:
+            max_values = find_max_in_bins(f_in, TF_db,"dB" ,spectral_bins)
+            for (max_freq, max_value, text) in max_values:
+                ax.annotate(text, xy=(max_freq, max_value), xytext=(max_freq * arrow_param[0], max_value + abs(max_value)* (arrow_param[1]-1)),
+                            arrowprops=dict(facecolor=arrow_param[2], shrink=arrow_param[4]),
+                            fontsize=arrow_param[5], color=arrow_param[3])
+
+        
+
+
+        plt.tight_layout()
+        plt.gcf().canvas.mpl_connect('key_press_event', close_plots)
+    return figure_number
+
+
+def plot_TF_db(filearray,filearray2,legend,nperseg,figure_number,split_figures,freq_lower,freq_upper,spectral_bins):
+
+
+    for n in range(len(filearray)):
+
+
+        if split_figures: 
+            figure_number+=1
+        f1 = filearray[n]
+        f2 = filearray2[n]
+        header = prefix_sort(f1,f2)
+        sample_rate, input_data = open_file(f1)
+        sample_rate, output_data = open_file(f2)
+
+        # If the audio file has multiple channels (e.g., stereo), select one channel
+        if input_data.ndim > 1:
+            input_data = input_data[:, 0]
+        if output_data.ndim > 1:
+            output_data = output_data[:, 0]
+        # Calculate the Power Spectral Density (PSD) using Welch's method
+        f_in, Pxx_in = sp.signal.welch(input_data, fs=sample_rate, nperseg=nperseg)
+        f_out, Pxx_out = sp.signal.welch(output_data, fs=sample_rate, nperseg=nperseg)
+
+        TF = Pxx_out/Pxx_in
+        TF_db = 10 * np.log10(TF)
+        # Plot the PSD
+        plt.figure(figure_number,figsize=(10, 6))
+
+
+        # Decibel scale
+        plt.xscale(xscale)
+        plt.plot(f_in, TF_db, label = header)
+        plt.title(f'{header} Transfer Function (dB Scale)')
+        plt.xlabel('Frequency [Hz]')
+        plt.ylabel('Magnitude [dB]')
+        plt.hlines(y=0,xmin=freq_lower,xmax=freq_upper,colors="orange",label="0dB")
+        if log_lines[0] != 0:
+            plt.vlines(x = log_lines, ymin = min(TF_db), ymax = max(TF_db),
+            colors = 'purple',
+            label = 'kHz lines')
+        if(freq_lower != 0 and freq_upper != 0):
+            plt.xlim(freq_lower,freq_upper)
+        plt.grid(True, which="both", ls="-")
+        
+        if legend == 0:
+            plt.legend()
+        else:
+            plt.legend([legend[n]])
+        ax = plt.gca()  # Get current axes
+        ax.minorticks_on()  # Enable minor ticks
+        minor_ticks = np.arange(minor_lower, freq_upper, 1000)  # Change step as needed
         ax.set_xticks(minor_ticks, minor=True)  # Set minor ticks
         ax.set_xticklabels([f"{tick} Hz" for tick in minor_ticks], minor=True, rotation=45, ha='right')
 
