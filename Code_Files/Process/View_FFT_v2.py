@@ -26,7 +26,7 @@ output_array= ['pickup_strum_1']
 sampling_rate = 44100  # Hz
 db_floor = -90  # dB
 
-arrow_param = [0,5,"none","green",0.5,8]
+arrow_param = [1.1,1.1,"none","green",1,8]
 xscale = 'log'
 yscale = 'linear'
 
@@ -187,7 +187,7 @@ def plot_PSD(filearray,nperseg,figure_number,freq_lower,freq_upper,spectral_bins
         if spectral_bins is not None:
             max_values = find_max_in_bins(f, Pxx,"V²/Hz" ,spectral_bins)
             for (max_freq, max_value, text) in max_values:
-                ax.annotate(text, xy=(max_freq, max_value), xytext=(max_freq + arrow_param[0], max_value+arrow_param[1]),
+                ax.annotate(text, xy=(max_freq, max_value), xytext=(max_freq * arrow_param[0], max_value*arrow_param[1]),
                             arrowprops=dict(facecolor=arrow_param[2], shrink=arrow_param[4]),
                             fontsize=arrow_param[5], color=arrow_param[3])
                 
@@ -234,7 +234,7 @@ def plot_PSD_db(filearray,nperseg,figure_number,freq_lower,freq_upper,spectral_b
         if spectral_bins is not None:
             max_values = find_max_in_bins(f, Pxx,"dB" ,spectral_bins)
             for (max_freq, max_value, text) in max_values:
-                ax.annotate(text, xy=(max_freq, max_value), xytext=(max_freq + arrow_param[0], max_value+arrow_param[1]),
+                ax.annotate(text, xy=(max_freq, max_value), xytext=(max_freq * arrow_param[0], max_value*arrow_param[1]),
                             arrowprops=dict(facecolor=arrow_param[2], shrink=arrow_param[4]),
                             fontsize=arrow_param[5], color=arrow_param[3])
     return figure_number
@@ -298,7 +298,7 @@ def plot_TF(filearray,filearray2,legend,nperseg,figure_number,split_figures,freq
         if spectral_bins is not None:
             max_values = find_max_in_bins(f_in, TF,"V^2/Hz" ,spectral_bins)
             for (max_freq, max_value, text) in max_values:
-                ax.annotate(text, xy=(max_freq, max_value), xytext=(max_freq + arrow_param[0], max_value+arrow_param[1]),
+                ax.annotate(text, xy=(max_freq, max_value), xytext=(max_freq * arrow_param[0], max_value+abs(max_value)* (arrow_param[1]-1)),
                             arrowprops=dict(facecolor=arrow_param[2], shrink=arrow_param[4]),
                             fontsize=arrow_param[5], color=arrow_param[3])
 
@@ -332,7 +332,7 @@ def plot_TF(filearray,filearray2,legend,nperseg,figure_number,split_figures,freq
         if spectral_bins is not None:
             max_values = find_max_in_bins(f_in, TF_db,"dB" ,spectral_bins)
             for (max_freq, max_value, text) in max_values:
-                ax.annotate(text, xy=(max_freq, max_value), xytext=(max_freq + arrow_param[0], max_value+arrow_param[1]),
+                ax.annotate(text, xy=(max_freq, max_value), xytext=(max_freq * arrow_param[0], max_value + abs(max_value)* (arrow_param[1]-1)),
                             arrowprops=dict(facecolor=arrow_param[2], shrink=arrow_param[4]),
                             fontsize=arrow_param[5], color=arrow_param[3])
 

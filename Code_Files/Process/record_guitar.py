@@ -41,6 +41,7 @@ def record():
     Signal_generators.record_only(TDn_filename,duration,sampling_rate,ch_sel)
     input("press enter to record the body transducer")
     Signal_generators.record_only(TDb_filename,duration,sampling_rate,ch_sel)
+    
 if __name__ == "__main__":
     #record()
     array1 = [pickup_file,transducer_neck_file,transducer_body_file]
