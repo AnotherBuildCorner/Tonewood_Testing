@@ -18,7 +18,7 @@ ch_sel = 1
 sampling_rate = 44100  # Hz
 duration = 5  # seconds
 
-
+spectral_bins = np.array([1,100,300,500,750,1000,2000,3000,5000,7000,10000,12000,15000,20000,22050])
 output_counter = 1
 output_file = "strandberg"
 
@@ -43,15 +43,15 @@ def record():
     Signal_generators.record_only(TDb_filename,duration,sampling_rate,ch_sel)
     
 if __name__ == "__main__":
-    #record()
+    record()
     array1 = [pickup_file,transducer_neck_file,transducer_body_file]
     tf_in = [pickup_file,pickup_file,transducer_neck_file]
     tf_out =[transducer_neck_file,transducer_body_file,transducer_body_file]
     legend = [f"pickup>neck",f"pickup>body",f"neck>body",]
 
 
-    View_FFT_v2.plot_PSD_db(array1,1024,1,plot_bands[0],plot_bands[1])
+    View_FFT_v2.plot_PSD_db(array1,1024,1,plot_bands[0],plot_bands[1],spectral_bins)
 
-    View_FFT_v2.plot_TF(tf_in,tf_out,legend,1024,2,True,1000,10000)
+    View_FFT_v2.plot_TF(tf_in,tf_out,legend,1024,2,True,1000,10000,spectral_bins)
 
     plt.show()

@@ -21,8 +21,8 @@ duration = 5  # seconds
 
 output_counter = 1
 
-output_file = "Laminated"
-transducer = "US"
+output_file = "Strandberg"
+transducer = "HB"
 
 plot_bands = [100,8000]
 
@@ -71,7 +71,10 @@ def set_counter():
 if __name__ == "__main__":
     
     TNN,TNC,TBN,TBC=set_counter()
-    
+    TDn_noise_filename =data_folder / f'{TNN}.wav'
+    TDn_chirp_filename =data_folder / f'{TNC}.wav'
+    TDb_noise_filename = data_folder / f'{TBN}.wav'
+    TDb_chirp_filename = data_folder / f'{TBC}.wav'
     record()
     array1 = [TNC,TBC]
     array2 = [TNN,TBN]

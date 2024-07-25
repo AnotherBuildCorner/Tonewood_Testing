@@ -21,8 +21,8 @@ duration = 5  # seconds
 
 output_counter = 1
 
-output_file_array = ["Mahogany","MDF"]
-output_range_array = [2,1]
+output_file_array = ["PurpleHeart","RedHeart"]
+output_range_array = [1,1]
 
 output_file = "o"
 output_range = 1
