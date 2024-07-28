@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import Params
 # Folder containing the .txt files (relative path)
-folder_path = os.path.join(os.path.dirname(__file__), 'test')  # Adjust 'data_folder' to the correct folder name
+folder_path = os.path.join(os.path.dirname(__file__), '2024-Classical')  # Adjust 'data_folder' to the correct folder name
 
 FREQ_MIN = Params.FREQ_MIN
 FREQ_MAX = Params.FREQ_MAX
