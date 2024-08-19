@@ -5,15 +5,13 @@ from scipy.signal import welch
 from matplotlib.animation import FuncAnimation
 import os
 import Params
+
 # Parameters
-
-# Initialize PyAudio
-
 FORMAT = Params.FORMAT
 CHANNELS = Params.CHANNELS
 RATE = Params.RATE
-CHUNK = Params.CHUNK  # Increased chunk size for better frequency resolution
-NPERSEG = Params.NPERSEG  # Increased segment length for better frequency resolution
+CHUNK = Params.CHUNK
+NPERSEG = Params.NPERSEG
 FREQ_MIN = Params.FREQ_MIN
 FREQ_MAX = Params.FREQ_MAX
 audio = pyaudio.PyAudio()
@@ -57,7 +55,7 @@ saved_lines_db = []
 ax3_lin.set_xlim(FREQ_MIN, FREQ_MAX)
 ax3_lin.set_title("Saved Max Values (Linear)")
 ax3_db.set_xlim(FREQ_MIN, FREQ_MAX)
-ax3_db.set_title("Saved Max Values (dB)")
+ax3_db.set_title("Saved Max Values (D.B.)")
 
 # Global variable to keep track of saved files
 save_count = 1
@@ -106,7 +104,8 @@ def update(frame):
     return line1, line2, line3, line4
 
 def save_max_values(event):
-    global save_count
+    global save_count, max_values, max_values_dB, min_values_dB
+    
     if event.key == 'x':
         filename = f"{base_filename}_{sub_filename}_{save_count}.txt"
         np.savetxt(filename, max_values)
@@ -121,13 +120,41 @@ def save_max_values(event):
         ax3_lin.set_ylim(0, max(max_values) * 1.1)
         ax3_db.legend()
         ax3_db.set_ylim(min(10 * np.log10(max_values)) - 10, max(10 * np.log10(max_values)) + 10)
+
+        max_values = np.zeros(len(freqs))
+        max_values_dB = np.full(len(freqs), -100)
+        min_values_dB = np.full(len(freqs), -100)  # Reset min values for dB scale
+
+        # Update plots with reset values
+        line2.set_ydata(max_values)
+        line4.set_ydata(max_values_dB)
+        
+        # Adjust y-axis limits for linear scale
+        ax1.set_ylim(0, max(max_values) * 1.1)
+        ax2.set_ylim(min(min_values_dB) - 10, max(max_values_dB) + 10)
         
         fig3.canvas.draw()
         
         save_count += 1
+    
+    elif event.key == 'c':  # Reset max values on 'C' key press
+        max_values = np.zeros(len(freqs))
+        max_values_dB = np.full(len(freqs), -100)
+        min_values_dB = np.full(len(freqs), -100)  # Reset min values for dB scale
+
+        # Update plots with reset values
+        line2.set_ydata(max_values)
+        line4.set_ydata(max_values_dB)
+        
+        # Adjust y-axis limits for linear scale
+        ax1.set_ylim(0, max(max_values) * 1.1)
+        ax2.set_ylim(min(min_values_dB) - 10, max(max_values_dB) + 10)
+        
+        fig1.canvas.draw()
+        fig2.canvas.draw()
 
 def main():
-# Animation
+    # Animation
     ani1 = FuncAnimation(fig1, update, interval=50)
     ani2 = FuncAnimation(fig2, update, interval=50)
 
